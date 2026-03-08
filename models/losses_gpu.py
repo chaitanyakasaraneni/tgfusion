@@ -1,25 +1,17 @@
 """
-GPU VERSION — use this file for CUDA training (Colab, cloud GPU).
-For CPU training use losses.py.
+TGFusion Loss Functions  (v2 — fixed for sharpness)
+====================================================
+Composite generator loss:
 
-TGFusion Loss Functions
-=======================
-Composite generator loss (paper Eq. 5):
+    L_G = L_cGAN + λ₁·L_intensity + λ₂·L_gradient + λ₃·L_SSIM + λ₄·L_MSE
 
-    L_G = L_cGAN(G, D) + λ₁·L_intensity(G) + λ₂·L_gradient(G) + λ₃·L_SSIM(G)
+Changes from v1:
+  - λ_grad raised from 10 → 50  (SF was stuck at ~6, needs >18)
+  - λ_MSE = 5 added  (pixel-MSE against max(A,B) target; helps PSNR)
+  - λ_intensity kept at 10, λ_SSIM kept at 5
+  - Discriminator 'real' sample = max(A,B) per pixel (not pixel average)
 
-No ground-truth target needed — all losses are no-reference, computed
-against the SOURCE images.  This matches the training protocol of
-U2Fusion, SwinFusion, and CDDFuse.
-
-    L_intensity : fused pixel values should preserve maximum intensity
-                  from either source  → max(A, B) per pixel
-    L_gradient  : fused gradients should preserve the stronger edge
-                  from either source  → max(|∇A|, |∇B|) per pixel
-    L_SSIM      : structural similarity fused↔A + fused↔B (averaged)
-
-Default weights (paper Table III ablation):
-    λ₁ = 10   λ₂ = 10   λ₃ = 5
+No ground-truth target needed — all losses are no-reference.
 """
 
 import torch
@@ -32,10 +24,7 @@ import torch.nn.functional as F
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _sobel_magnitude(x):
-    """
-    Returns per-pixel gradient magnitude of x (B,1,H,W) in [-1,1].
-    Output same shape, values in [0, ~1].
-    """
+    """Per-pixel gradient magnitude of x (B,1,H,W). Output in [0, ~1]."""
     sobel_x = torch.tensor(
         [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]],
         dtype=x.dtype, device=x.device
@@ -50,30 +39,30 @@ def _sobel_magnitude(x):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# No-reference intensity loss
+# Individual loss terms
 # ─────────────────────────────────────────────────────────────────────────────
 
 class IntensityLoss(nn.Module):
-    """
-    Fused pixel values should match the maximum-intensity source at each pixel.
-    This preserves the most informative modality locally.
-
-        L_intensity = mean | fused - max(A, B) |
-    """
+    """L1 between fused pixels and per-pixel maximum of sources."""
     def forward(self, fused, img_a, img_b):
-        target = torch.max(img_a, img_b)          # per-pixel maximum
+        target = torch.max(img_a, img_b)
         return F.l1_loss(fused, target)
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# No-reference gradient (edge) loss
-# ─────────────────────────────────────────────────────────────────────────────
+class MSELoss(nn.Module):
+    """
+    MSE between fused and per-pixel maximum of sources.
+    Directly penalises PSNR-relevant squared error.
+    """
+    def forward(self, fused, img_a, img_b):
+        target = torch.max(img_a, img_b)
+        return F.mse_loss(fused, target)
+
 
 class GradientLoss(nn.Module):
     """
-    Fused image gradients should match the stronger edge source at each pixel.
-
-        L_gradient = mean | |∇fused| - max(|∇A|, |∇B|) |
+    L1 between fused gradient magnitude and the stronger source gradient.
+    Drives SF upward — critical for sharpness.
     """
     def forward(self, fused, img_a, img_b):
         g_fused = _sobel_magnitude(fused)
@@ -83,20 +72,11 @@ class GradientLoss(nn.Module):
         return F.l1_loss(g_fused, target)
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# No-reference SSIM loss
-# ─────────────────────────────────────────────────────────────────────────────
-
 class SSIMLoss(nn.Module):
     """
-    Differentiable SSIM loss — no-reference version.
-
-    For training:  1 - mean(SSIM(fused, A), SSIM(fused, B))
-    This encourages structural similarity to BOTH source modalities.
-
-    Uses 11×11 Gaussian kernel, σ=1.5 (paper Section III-E).
+    1 - mean(SSIM(fused, A), SSIM(fused, B)).
+    11×11 Gaussian kernel, σ=1.5.
     """
-
     def __init__(self, window_size=11, sigma=1.5,
                  C1=0.01 ** 2, C2=0.03 ** 2):
         super().__init__()
@@ -108,27 +88,24 @@ class SSIMLoss(nn.Module):
 
     @staticmethod
     def _gauss(size, sigma):
-        c  = torch.arange(size, dtype=torch.float32) - size // 2
-        g  = torch.exp(-(c ** 2) / (2 * sigma ** 2))
-        g  = g / g.sum()
-        k  = (g.unsqueeze(0) * g.unsqueeze(1)).unsqueeze(0).unsqueeze(0)
+        c = torch.arange(size, dtype=torch.float32) - size // 2
+        g = torch.exp(-(c ** 2) / (2 * sigma ** 2))
+        g = g / g.sum()
+        k = (g.unsqueeze(0) * g.unsqueeze(1)).unsqueeze(0).unsqueeze(0)
         return k
 
     def _ssim_pair(self, pred, target):
-        """Differentiable SSIM between two (B,1,H,W) images in [-1,1]."""
         pred   = (pred   + 1) / 2
         target = (target + 1) / 2
         pred   = pred.float()
         target = target.float()
-        C = pred.shape[1]
+        C   = pred.shape[1]
         pad = self.ws // 2
         k   = self.kernel.float().to(pred.device).expand(C, 1, -1, -1)
 
-        mu1    = F.conv2d(pred,   k, padding=pad, groups=C)
-        mu2    = F.conv2d(target, k, padding=pad, groups=C)
-        mu1_sq = mu1 ** 2
-        mu2_sq = mu2 ** 2
-        mu12   = mu1 * mu2
+        mu1  = F.conv2d(pred,   k, padding=pad, groups=C)
+        mu2  = F.conv2d(target, k, padding=pad, groups=C)
+        mu1_sq = mu1 ** 2;  mu2_sq = mu2 ** 2;  mu12 = mu1 * mu2
 
         s1  = F.conv2d(pred   * pred,   k, padding=pad, groups=C) - mu1_sq
         s2  = F.conv2d(target * target, k, padding=pad, groups=C) - mu2_sq
@@ -139,19 +116,13 @@ class SSIMLoss(nn.Module):
         return (num / den).mean()
 
     def forward(self, fused, img_a, img_b):
-        """Returns 1 - mean_ssim (to be minimised)."""
         ssim_a = self._ssim_pair(fused, img_a)
         ssim_b = self._ssim_pair(fused, img_b)
         return 1 - (ssim_a + ssim_b) / 2
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# cGAN adversarial loss
-# ─────────────────────────────────────────────────────────────────────────────
-
 class GANLoss(nn.Module):
-    """cGAN loss with label smoothing (real=0.9, fake=0.0)."""
-
+    """cGAN BCE loss with label smoothing (real=0.9, fake=0.0)."""
     def __init__(self, real_label=0.9, fake_label=0.0):
         super().__init__()
         self.real = real_label
@@ -165,67 +136,74 @@ class GANLoss(nn.Module):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# TGFusion composite loss
+# TGFusion composite loss  (v2)
 # ─────────────────────────────────────────────────────────────────────────────
 
 class TGFusionLoss(nn.Module):
     """
-    Full composite no-reference loss for TGFusion (paper Eq. 5):
+    Full composite no-reference loss for TGFusion:
 
-        L_G = L_cGAN + λ₁·L_intensity + λ₂·L_gradient + λ₃·L_SSIM
+        L_G = L_cGAN
+              + λ_intensity · L_intensity   (default 10)
+              + λ_grad      · L_gradient    (default 50  ← raised ×5)
+              + λ_ssim      · L_SSIM        (default  5)
+              + λ_mse       · L_MSE         (default  5  ← new)
 
-    No ground-truth target required — all terms compare fused vs sources.
+    Discriminator 'real' sample = max(A, B) per pixel (no-reference).
     """
 
-    def __init__(self, lambda_intensity=10.0, lambda_grad=10.0,
+    def __init__(self,
+                 lambda_intensity=10.0,
+                 lambda_grad=50.0,       # ×5 vs v1
                  lambda_ssim=5.0,
-                 # legacy aliases kept for backward compat
-                 lambda_l1=None, lambda_ssim_compat=None):
+                 lambda_mse=5.0,         # new
+                 # legacy kwargs kept for backward compat
+                 lambda_l1=None,
+                 **_kwargs):
         super().__init__()
-        # Allow old kwarg names from train.py args
         self.lambda_intensity = lambda_l1 if lambda_l1 is not None else lambda_intensity
         self.lambda_grad      = lambda_grad
         self.lambda_ssim      = lambda_ssim
+        self.lambda_mse       = lambda_mse
 
         self.gan       = GANLoss()
         self.intensity = IntensityLoss()
+        self.mse_loss  = MSELoss()
         self.gradient  = GradientLoss()
         self.ssim      = SSIMLoss(window_size=11, sigma=1.5)
 
-    def generator_loss(self, fake_pred, fused, img_a, img_b,
-                       # legacy: old code passes target as 3rd positional arg
-                       target=None):
+    def generator_loss(self, fake_pred, fused, img_a, img_b, target=None):
         """
         Args:
-            fake_pred : discriminator output on generated image  (B,1,H',W')
-            fused     : generated fused image                    (B,1,H,W)
-            img_a     : source modality A                        (B,1,H,W)
-            img_b     : source modality B                        (B,1,H,W)
-            target    : ignored (kept for API compatibility)
+            fake_pred : discriminator output on fused image  (B,1,H',W')
+            fused     : generated fused image                (B,1,H,W)
+            img_a     : source modality A                    (B,1,H,W)
+            img_b     : source modality B                    (B,1,H,W)
+            target    : ignored (API compat)
         """
-        l_gan      = self.gan(fake_pred, is_real=True)
+        l_gan       = self.gan(fake_pred, is_real=True)
         l_intensity = self.intensity(fused, img_a, img_b)
-        l_grad     = self.gradient(fused,  img_a, img_b)
-        l_ssim     = self.ssim(fused,      img_a, img_b)
+        l_mse       = self.mse_loss(fused,  img_a, img_b)
+        l_grad      = self.gradient(fused,  img_a, img_b)
+        l_ssim      = self.ssim(fused,      img_a, img_b)
 
         total = (l_gan
                  + self.lambda_intensity * l_intensity
+                 + self.lambda_mse       * l_mse
                  + self.lambda_grad      * l_grad
                  + self.lambda_ssim      * l_ssim)
 
         return total, {
             "G_cGAN"     : l_gan.item(),
             "G_intensity": l_intensity.item(),
+            "G_MSE"      : l_mse.item(),
             "G_grad"     : l_grad.item(),
             "G_SSIM"     : l_ssim.item(),
             "G_total"    : total.item(),
         }
 
     def discriminator_loss(self, real_pred, fake_pred):
-        """
-        The discriminator still uses the pixel-max composite as 'real'.
-        Alternatively train D on source images directly — both work.
-        """
+        """Discriminator trained: real = max(A,B), fake = fused."""
         l_real = self.gan(real_pred,          is_real=True)
         l_fake = self.gan(fake_pred.detach(), is_real=False)
         total  = (l_real + l_fake) * 0.5
