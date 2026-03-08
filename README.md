@@ -3,7 +3,13 @@
 **Transformer-GAN Hybrid Architecture for Multi-Modal Medical Image Fusion**
 
 > Chaitanya Krishna Kasaraneni · Sarmista Thalapaneni  
-> IEEE EIT 2026 · [`kc.kasaraneni@ieee.org`](mailto:kc.kasaraneni@ieee.org)
+> [`kc.kasaraneni@ieee.org`](mailto:kc.kasaraneni@ieee.org)
+
+---
+
+## Architecture
+
+![TGFusion Architecture](assets/images/tgfusion_architecture.svg)
 
 ---
 

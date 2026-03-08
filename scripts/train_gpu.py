@@ -220,8 +220,10 @@ def train(args):
             # ── Discriminator update ─────────────────────────────────────────
             for _ in range(args.n_disc_upd):
                 with autocast("cuda", enabled=use_amp):
+                    # Real sample = per-pixel max of sources (no-reference protocol)
+                    real_img  = torch.max(img_a, img_b)
                     fused     = model(img_a, img_b).detach()
-                    real_pred = model.discriminate(img_a, img_b, target)
+                    real_pred = model.discriminate(img_a, img_b, real_img)
                     fake_pred = model.discriminate(img_a, img_b, fused)
                     d_loss, d_log = criterion.discriminator_loss(real_pred,
                                                                   fake_pred)
@@ -234,7 +236,7 @@ def train(args):
                 fused     = model(img_a, img_b)
                 fake_pred = model.discriminate(img_a, img_b, fused)
                 g_loss, g_log = criterion.generator_loss(fake_pred, fused,
-                                                          target)
+                                                          img_a, img_b)
             opt_G.zero_grad()
             scaler.scale(g_loss).backward()
             scaler.step(opt_G)
@@ -270,7 +272,7 @@ def train(args):
                 target = target.to(device)
                 fused  = model(img_a, img_b)
                 val_tracker.update(
-                    compute_all_metrics(fused, target, img_a, img_b)
+                    compute_all_metrics(fused, img_a, img_b)
                 )
                 if i == 0 and epoch % args.vis_every == 0:
                     grid_path = vis_dir / f'epoch_{epoch:03d}.png'

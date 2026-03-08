@@ -116,13 +116,14 @@ def compute_sf(fused):
 # Combined
 # ─────────────────────────────────────────────────────────────────────────────
 
-def compute_all_metrics(fused, target, img_a, img_b):
+def compute_all_metrics(fused, img_a, img_b):
     """
-    Compute all four paper metrics in one call.
+    Compute all four paper metrics in one call — no-reference protocol.
+    SSIM and PSNR are averaged over fused↔A and fused↔B (no ground truth).
+    This matches U2Fusion / SwinFusion / CDDFuse evaluation standard.
 
     Args:
         fused  : generated fused image  tensor (B,1,H,W) in [-1,1]
-        target : ground-truth           tensor (B,1,H,W) in [-1,1]
         img_a  : input modality A       tensor (B,1,H,W) in [-1,1]
         img_b  : input modality B       tensor (B,1,H,W) in [-1,1]
 
@@ -130,8 +131,8 @@ def compute_all_metrics(fused, target, img_a, img_b):
         dict with keys: SSIM, PSNR, MI, SF
     """
     return {
-        'SSIM': compute_ssim(fused, target),
-        'PSNR': compute_psnr(fused, target),
+        'SSIM': (compute_ssim(fused, img_a) + compute_ssim(fused, img_b)) / 2,
+        'PSNR': (compute_psnr(fused, img_a) + compute_psnr(fused, img_b)) / 2,
         'MI'  : compute_mi(fused, img_a, img_b),
         'SF'  : compute_sf(fused),
     }
