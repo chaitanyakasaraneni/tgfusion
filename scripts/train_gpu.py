@@ -44,7 +44,7 @@ from torch.amp import GradScaler, autocast
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from models.tgfusion import TGFusion
-from models.losses import TGFusionLoss
+from models.losses_gpu import TGFusionLoss
 from data.dataset import build_dataloader
 from utils.metrics import compute_all_metrics, MetricTracker
 from utils.visualise import save_comparison_grid
