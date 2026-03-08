@@ -251,7 +251,6 @@ def train(args):
                     f"    batch {batch_idx:04d}/{n_batches}  "
                     f"G={g_log['G_total']:.4f}  "
                     f"(cGAN={g_log['G_cGAN']:.4f}  "
-                    f"L1={g_log['G_L1']:.4f}  "
                     f"SSIM={g_log['G_SSIM']:.4f})  "
                     f"D={d_log['D_total']:.4f}  "
                     f"lr={opt_G.param_groups[0]['lr']:.2e}"
