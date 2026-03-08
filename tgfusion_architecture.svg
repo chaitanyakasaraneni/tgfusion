@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="440" viewBox="0 0 1080 440" font-family="'Helvetica Neue', Arial, sans-serif">
+
+  <rect width="1080" height="440" fill="#ffffff"/>
+
+  <defs>
+    <marker id="arr"       markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0.5 L0,6.5 L7,3.5 z" fill="#374151"/></marker>
+    <marker id="arr-blue"  markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0.5 L0,6.5 L7,3.5 z" fill="#1D4ED8"/></marker>
+    <marker id="arr-green" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0.5 L0,6.5 L7,3.5 z" fill="#15803D"/></marker>
+    <marker id="arr-amber" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0.5 L0,6.5 L7,3.5 z" fill="#B45309"/></marker>
+    <marker id="arr-rose"  markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0.5 L0,6.5 L7,3.5 z" fill="#BE123C"/></marker>
+    <marker id="arr-slate" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0.5 L0,6.5 L7,3.5 z" fill="#64748B"/></marker>
+    <filter id="sd"><feDropShadow dx="0" dy="1.5" stdDeviation="2" flood-color="#0000001a"/></filter>
+  </defs>
+
+  <!-- TITLE -->
+  <text x="540" y="26" text-anchor="middle" font-size="15" font-weight="700" fill="#0F172A">TGFusion: System Architecture</text>
+
+  <!-- SECTION HEADERS -->
+  <text x="58"  y="46" text-anchor="middle" font-size="9" font-weight="600" fill="#64748B">INPUTS</text>
+  <text x="295" y="46" text-anchor="middle" font-size="9" font-weight="600" fill="#64748B">SHARED SWIN ENCODER (f&#x3B8;)</text>
+  <text x="559" y="46" text-anchor="middle" font-size="9" font-weight="600" fill="#64748B">CROSS-MODAL ATTENTION</text>
+  <text x="778" y="46" text-anchor="middle" font-size="9" font-weight="600" fill="#64748B">cGAN DECODER</text>
+  <text x="1027" y="46" text-anchor="middle" font-size="9" font-weight="600" fill="#64748B">OUTPUT</text>
+
+  <!-- encoder bracket underline -->
+  <line x1="148" y1="50" x2="452" y2="50" stroke="#2563EB" stroke-width="1.3"/>
+  <line x1="148" y1="47" x2="148" y2="50" stroke="#2563EB" stroke-width="1.3"/>
+  <line x1="452" y1="47" x2="452" y2="50" stroke="#2563EB" stroke-width="1.3"/>
+
+  <!-- STREAM LABELS -->
+  <text x="14" y="165" text-anchor="middle" font-size="9" font-weight="600" fill="#475569" transform="rotate(-90,14,165)">Stream A</text>
+  <text x="14" y="300" text-anchor="middle" font-size="9" font-weight="600" fill="#475569" transform="rotate(-90,14,300)">Stream B</text>
+
+  <!-- ── INPUT BOXES ─────────────────────────── -->
+  <rect x="24" y="120" width="82" height="64" rx="7" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.6" filter="url(#sd)"/>
+  <text x="65" y="144" text-anchor="middle" font-size="10.5" font-weight="700" fill="#1E3A8A">Input A</text>
+  <text x="65" y="159" text-anchor="middle" font-size="9.5"  fill="#3B82F6">CT / MRI</text>
+  <text x="65" y="174" text-anchor="middle" font-size="8.5"  fill="#64748B">256&#xD7;256</text>
+
+  <rect x="24" y="255" width="82" height="64" rx="7" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.6" filter="url(#sd)"/>
+  <text x="65" y="279" text-anchor="middle" font-size="10.5" font-weight="700" fill="#1E3A8A">Input B</text>
+  <text x="65" y="294" text-anchor="middle" font-size="9.5"  fill="#3B82F6">MRI / PET</text>
+  <text x="65" y="309" text-anchor="middle" font-size="8.5"  fill="#64748B">256&#xD7;256</text>
+
+  <line x1="106" y1="152" x2="146" y2="152" stroke="#374151" stroke-width="1.6" marker-end="url(#arr)"/>
+  <line x1="106" y1="287" x2="146" y2="287" stroke="#374151" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <!-- ── ENCODER STAGE 1 ─────────────────────── -->
+  <rect x="148" y="124" width="86" height="56" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.5" filter="url(#sd)"/>
+  <text x="191" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#1E40AF">Stage 1</text>
+  <text x="191" y="159" text-anchor="middle" font-size="8.5" fill="#2563EB">Win-Attn</text>
+  <text x="191" y="172" text-anchor="middle" font-size="8"   fill="#64748B">C = 64</text>
+
+  <rect x="148" y="259" width="86" height="56" rx="6" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.5" filter="url(#sd)"/>
+  <text x="191" y="280" text-anchor="middle" font-size="10" font-weight="700" fill="#1E40AF">Stage 1</text>
+  <text x="191" y="294" text-anchor="middle" font-size="8.5" fill="#2563EB">Win-Attn</text>
+  <text x="191" y="307" text-anchor="middle" font-size="8"   fill="#64748B">C = 64</text>
+
+  <line x1="234" y1="152" x2="250" y2="152" stroke="#1D4ED8" stroke-width="1.6" marker-end="url(#arr-blue)"/>
+  <line x1="234" y1="287" x2="250" y2="287" stroke="#1D4ED8" stroke-width="1.6" marker-end="url(#arr-blue)"/>
+
+  <!-- ── ENCODER STAGE 2 ─────────────────────── -->
+  <rect x="252" y="124" width="86" height="56" rx="6" fill="#BFDBFE" stroke="#2563EB" stroke-width="1.5" filter="url(#sd)"/>
+  <text x="295" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#1E40AF">Stage 2</text>
+  <text x="295" y="159" text-anchor="middle" font-size="8.5" fill="#2563EB">Patch Merge</text>
+  <text x="295" y="172" text-anchor="middle" font-size="8"   fill="#64748B">C = 128</text>
+
+  <rect x="252" y="259" width="86" height="56" rx="6" fill="#BFDBFE" stroke="#2563EB" stroke-width="1.5" filter="url(#sd)"/>
+  <text x="295" y="280" text-anchor="middle" font-size="10" font-weight="700" fill="#1E40AF">Stage 2</text>
+  <text x="295" y="294" text-anchor="middle" font-size="8.5" fill="#2563EB">Patch Merge</text>
+  <text x="295" y="307" text-anchor="middle" font-size="8"   fill="#64748B">C = 128</text>
+
+  <line x1="338" y1="152" x2="354" y2="152" stroke="#1D4ED8" stroke-width="1.6" marker-end="url(#arr-blue)"/>
+  <line x1="338" y1="287" x2="354" y2="287" stroke="#1D4ED8" stroke-width="1.6" marker-end="url(#arr-blue)"/>
+
+  <!-- ── ENCODER STAGE 3 ─────────────────────── -->
+  <rect x="356" y="124" width="86" height="56" rx="6" fill="#93C5FD" stroke="#1D4ED8" stroke-width="1.5" filter="url(#sd)"/>
+  <text x="399" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#1E3A8A">Stage 3</text>
+  <text x="399" y="159" text-anchor="middle" font-size="8.5" fill="#1D4ED8">Patch Merge</text>
+  <text x="399" y="172" text-anchor="middle" font-size="8"   fill="#1E3A8A">C = 256</text>
+
+  <rect x="356" y="259" width="86" height="56" rx="6" fill="#93C5FD" stroke="#1D4ED8" stroke-width="1.5" filter="url(#sd)"/>
+  <text x="399" y="280" text-anchor="middle" font-size="10" font-weight="700" fill="#1E3A8A">Stage 3</text>
+  <text x="399" y="294" text-anchor="middle" font-size="8.5" fill="#1D4ED8">Patch Merge</text>
+  <text x="399" y="307" text-anchor="middle" font-size="8"   fill="#1E3A8A">C = 256</text>
+
+  <!-- Stage 3 → CMA diagonal arrows -->
+  <line x1="442" y1="152" x2="498" y2="215" stroke="#1D4ED8" stroke-width="1.6" marker-end="url(#arr-blue)"/>
+  <line x1="442" y1="287" x2="498" y2="258" stroke="#1D4ED8" stroke-width="1.6" marker-end="url(#arr-blue)"/>
+
+  <!-- ── SKIP CONNECTIONS ───────────────────────
+       Routed over top (A streams) and under bottom (B streams)
+       Stage 1 centreX=191 → Up-1 centreX=923
+       Stage 2 centreX=295 → Up-2 centreX=815
+  ─────────────────────────────────────────── -->
+  <!-- top routing -->
+  <polyline points="191,124 191,96 923,96 923,124"
+    fill="none" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#arr-slate)"/>
+  <polyline points="295,124 295,86 815,86 815,124"
+    fill="none" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#arr-slate)"/>
+  <!-- bottom routing -->
+  <polyline points="191,315 191,352 923,352 923,340"
+    fill="none" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#arr-slate)"/>
+  <polyline points="295,315 295,362 815,362 815,340"
+    fill="none" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#arr-slate)"/>
+  <!-- skip label -->
+  <text x="540" y="80" text-anchor="middle" font-size="8.5" fill="#94A3B8" font-style="italic">skip connections (avg. across streams)</text>
+
+  <!-- ── CROSS-MODAL ATTENTION ──────────────────
+       x=500  y=192  w=118  h=100
+  ─────────────────────────────────────────── -->
+  <rect x="500" y="192" width="118" height="100" rx="10" fill="#FEF3C7" stroke="#D97706" stroke-width="2" filter="url(#sd)"/>
+  <text x="559" y="213" text-anchor="middle" font-size="10"   font-weight="700" fill="#92400E">Bidirectional</text>
+  <text x="559" y="227" text-anchor="middle" font-size="10"   font-weight="700" fill="#92400E">Cross-Modal</text>
+  <text x="559" y="241" text-anchor="middle" font-size="10"   font-weight="700" fill="#92400E">Attention</text>
+  <!-- mini bidirectional arrows -->
+  <line x1="524" y1="254" x2="554" y2="254" stroke="#B45309" stroke-width="1.3" marker-end="url(#arr-amber)"/>
+  <line x1="594" y1="263" x2="564" y2="263" stroke="#B45309" stroke-width="1.3" marker-end="url(#arr-amber)"/>
+  <text x="559" y="278" text-anchor="middle" font-size="7.5" fill="#B45309">Q_A&#x2192;K_B,V_B  |  Q_B&#x2192;K_A,V_A</text>
+  <text x="559" y="289" text-anchor="middle" font-size="7.5" fill="#92400E">LayerNorm(F&#x303;_A + F&#x303;_B)</text>
+
+  <!-- CMA → decoder -->
+  <line x1="618" y1="242" x2="664" y2="242" stroke="#B45309" stroke-width="1.8" marker-end="url(#arr-amber)"/>
+
+  <!-- ── DECODER  (y=124 h=216, centre=232) ─────
+       Up-3 x=666  Up-2 x=774  Up-1 x=882
+  ─────────────────────────────────────────── -->
+
+  <!-- Up-3 -->
+  <rect x="666" y="124" width="82" height="216" rx="7" fill="#DCFCE7" stroke="#16A34A" stroke-width="1.6" filter="url(#sd)"/>
+  <line x1="666" y1="242" x2="748" y2="242" stroke="#16A34A" stroke-width="0.8" stroke-dasharray="3,2"/>
+  <text x="707" y="147" text-anchor="middle" font-size="10"  font-weight="700" fill="#166534">Up-3</text>
+  <text x="707" y="162" text-anchor="middle" font-size="8.5" fill="#15803D">Deconv 2&#xD7;</text>
+  <text x="707" y="175" text-anchor="middle" font-size="8"   fill="#64748B">C = 256</text>
+  <text x="707" y="189" text-anchor="middle" font-size="7.5" fill="#64748B">+Skip&#x2295;</text>
+  <text x="707" y="233" text-anchor="middle" font-size="9"   font-weight="600" fill="#166534">&#x2295; concat</text>
+  <text x="707" y="284" text-anchor="middle" font-size="8.5" fill="#64748B">InstanceNorm</text>
+  <text x="707" y="297" text-anchor="middle" font-size="8.5" fill="#64748B">+ ReLU</text>
+  <line x1="748" y1="242" x2="772" y2="242" stroke="#15803D" stroke-width="1.8" marker-end="url(#arr-green)"/>
+
+  <!-- Up-2 -->
+  <rect x="774" y="124" width="82" height="216" rx="7" fill="#BBF7D0" stroke="#16A34A" stroke-width="1.6" filter="url(#sd)"/>
+  <line x1="774" y1="242" x2="856" y2="242" stroke="#16A34A" stroke-width="0.8" stroke-dasharray="3,2"/>
+  <text x="815" y="147" text-anchor="middle" font-size="10"  font-weight="700" fill="#166534">Up-2</text>
+  <text x="815" y="162" text-anchor="middle" font-size="8.5" fill="#15803D">Deconv 2&#xD7;</text>
+  <text x="815" y="175" text-anchor="middle" font-size="8"   fill="#64748B">C = 128</text>
+  <text x="815" y="189" text-anchor="middle" font-size="7.5" fill="#64748B">+Skip&#x2295;</text>
+  <text x="815" y="233" text-anchor="middle" font-size="9"   font-weight="600" fill="#166534">&#x2295; concat</text>
+  <text x="815" y="284" text-anchor="middle" font-size="8.5" fill="#64748B">InstanceNorm</text>
+  <text x="815" y="297" text-anchor="middle" font-size="8.5" fill="#64748B">+ ReLU</text>
+  <line x1="856" y1="242" x2="880" y2="242" stroke="#15803D" stroke-width="1.8" marker-end="url(#arr-green)"/>
+
+  <!-- Up-1 -->
+  <rect x="882" y="124" width="82" height="216" rx="7" fill="#86EFAC" stroke="#16A34A" stroke-width="1.6" filter="url(#sd)"/>
+  <line x1="882" y1="242" x2="964" y2="242" stroke="#16A34A" stroke-width="0.8" stroke-dasharray="3,2"/>
+  <text x="923" y="147" text-anchor="middle" font-size="10"  font-weight="700" fill="#166534">Up-1</text>
+  <text x="923" y="162" text-anchor="middle" font-size="8.5" fill="#15803D">Deconv 2&#xD7;</text>
+  <text x="923" y="175" text-anchor="middle" font-size="8"   fill="#64748B">C = 64</text>
+  <text x="923" y="233" text-anchor="middle" font-size="9"   font-weight="600" fill="#166534">&#x2295; concat</text>
+  <text x="923" y="284" text-anchor="middle" font-size="8.5" fill="#64748B">InstanceNorm</text>
+  <text x="923" y="297" text-anchor="middle" font-size="8.5" fill="#64748B">+ ReLU</text>
+  <line x1="964" y1="242" x2="982" y2="242" stroke="#15803D" stroke-width="1.8" marker-end="url(#arr-green)"/>
+
+  <!-- ── FUSED OUTPUT ────────────────────────── -->
+  <rect x="984" y="206" width="82" height="72" rx="8" fill="#F0FDF4" stroke="#16A34A" stroke-width="2" filter="url(#sd)"/>
+  <text x="1025" y="231" text-anchor="middle" font-size="11" font-weight="700" fill="#166534">Fused</text>
+  <text x="1025" y="248" text-anchor="middle" font-size="11" font-weight="700" fill="#166534">Output</text>
+  <text x="1025" y="265" text-anchor="middle" font-size="10" fill="#15803D">I&#x302; &#x2208; [&#x2212;1,1]</text>
+
+  <!-- ── PATCHGAN DISCRIMINATOR ─────────────── -->
+  <rect x="500" y="376" width="456" height="44" rx="8" fill="#FFF1F2" stroke="#E11D48" stroke-width="1.8" filter="url(#sd)"/>
+  <text x="728" y="396" text-anchor="middle" font-size="10.5" font-weight="700" fill="#9F1239">PatchGAN Discriminator  D</text>
+  <text x="728" y="411" text-anchor="middle" font-size="9"     fill="#BE123C">[ I_A ;  I_B ;  I&#x302; ]  &#x2192;  Real / Fake patches</text>
+
+  <!-- fused output ↓ disc -->
+  <polyline points="1025,278 1025,398 956,398"
+    fill="none" stroke="#BE123C" stroke-width="1.3" stroke-dasharray="5,3" marker-end="url(#arr-rose)"/>
+
+  <!-- Input A ↓ across → disc -->
+  <polyline points="65,184 65,398 500,398"
+    fill="none" stroke="#BE123C" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arr-rose)"/>
+
+  <!-- L_cGAN feedback arc -->
+  <path d="M 612,376 C 570,345 535,318 535,292"
+    fill="none" stroke="#BE123C" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr-rose)"/>
+  <rect x="484" y="340" width="72" height="20" rx="4" fill="#FFF1F2" stroke="#E11D48" stroke-width="1"/>
+  <text x="520" y="354" text-anchor="middle" font-size="9.5" font-weight="700" fill="#9F1239">L_cGAN</text>
+
+  <!-- Loss formula -->
+  <rect x="666" y="350" width="178" height="34" rx="5" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.2"/>
+  <text x="755" y="366" text-anchor="middle" font-size="8.5" fill="#374151">L_G = L_cGAN + &#x3BB;&#x2081;L&#x2081; + &#x3BB;&#x2082;L_SSIM</text>
+  <text x="755" y="379" text-anchor="middle" font-size="8"   fill="#64748B">&#x3BB;&#x2081; = 10 (pixel fidelity)   &#x3BB;&#x2082; = 5 (structure)</text>
+
+  <!-- ── LEGEND ──────────────────────────────── -->
+  <rect x="24" y="376" width="456" height="48" rx="7" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1.2"/>
+
+  <rect x="36"  y="388" width="13" height="13" rx="3" fill="#DBEAFE" stroke="#2563EB" stroke-width="1.2"/>
+  <text x="55"  y="399" font-size="8.5" fill="#374151">Swin Encoder (shared)</text>
+
+  <rect x="168" y="388" width="13" height="13" rx="3" fill="#FEF3C7" stroke="#D97706" stroke-width="1.2"/>
+  <text x="187" y="399" font-size="8.5" fill="#374151">Cross-Modal Attn.</text>
+
+  <rect x="282" y="388" width="13" height="13" rx="3" fill="#DCFCE7" stroke="#16A34A" stroke-width="1.2"/>
+  <text x="301" y="399" font-size="8.5" fill="#374151">cGAN Decoder</text>
+
+  <rect x="386" y="388" width="13" height="13" rx="3" fill="#FFF1F2" stroke="#E11D48" stroke-width="1.2"/>
+  <text x="405" y="399" font-size="8.5" fill="#374151">Discriminator</text>
+
+  <line x1="36"  y1="418" x2="49"  y2="418" stroke="#94A3B8" stroke-width="1.3" stroke-dasharray="4,2"/>
+  <text x="55"  y="422" font-size="8.5" fill="#374151">Skip connections</text>
+
+  <line x1="168" y1="418" x2="181" y2="418" stroke="#BE123C" stroke-width="1.3" stroke-dasharray="4,2"/>
+  <text x="187" y="422" font-size="8.5" fill="#374151">Adversarial feedback</text>
+
+</svg>
